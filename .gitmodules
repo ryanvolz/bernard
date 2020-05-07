@@ -1,6 +1,3 @@
-[submodule "resources/botc"]
-	path = resources/botc
-	url = https://github.com/ryanvolz/botc_data.git
 [submodule "lib/utils"]
 	path = lib/utils
 	url = https://github.com/ryanvolz/discord_bot_utils.git
