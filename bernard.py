@@ -10,6 +10,7 @@
 # ----------------------------------------------------------------------------
 """Bernard - Discord bot and Head of Behavior."""
 
+import itertools
 import logging
 import os
 
@@ -30,9 +31,48 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
         delete_delay = 30
         if ctx.guild is not None:
             # command is in a text channel, delete response after some time
-            await ctx.send("I've sent you a Direct Message.", delete_after=delete_delay)
             await ctx.message.delete(delay=delete_delay)
+            if self.get_destination() == ctx.author:
+                # if response is going to author, let them know
+                await ctx.send(
+                    "I've sent you a Direct Message.", delete_after=delete_delay
+                )
         await super().prepare_help_command(ctx, command)
+
+    # override send_bot_help with fix so that unsorted commands stay in right order
+    async def send_bot_help(self, mapping):
+        ctx = self.context
+        bot = ctx.bot
+
+        if bot.description:
+            # <description> portion
+            self.paginator.add_line(bot.description, empty=True)
+
+        no_category = "\u200b{0.no_category}:".format(self)
+
+        def get_category(command, *, no_category=no_category):
+            cog = command.cog
+            return cog.qualified_name + ":" if cog is not None else no_category
+
+        filtered = await self.filter_commands(
+            bot.commands, sort=self.sort_commands, key=get_category
+        )
+        max_size = self.get_max_size(filtered)
+        to_iterate = itertools.groupby(filtered, key=get_category)
+
+        # Now we can add the commands to the page.
+        for category, cmds in to_iterate:
+            cmds = (
+                sorted(cmds, key=lambda c: c.name) if self.sort_commands else list(cmds)
+            )
+            self.add_indented_commands(cmds, heading=category, max_size=max_size)
+
+        note = self.get_ending_note()
+        if note:
+            self.paginator.add_line()
+            self.paginator.add_line(note)
+
+        await self.send_pages()
 
 
 def get_prefix(bot, message):
@@ -59,7 +99,9 @@ initial_extensions = [
 bot = commands.Bot(
     command_prefix=get_prefix,
     description="Bernard - Discord bot and Head of Behavior",
-    help_command=CustomHelpCommand(sort_commands=False, dm_help=True),
+    help_command=CustomHelpCommand(
+        sort_commands=False, dm_help=None, dm_help_threshold=4
+    ),
     owner_id=owner_id,
 )
 
