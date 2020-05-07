@@ -17,8 +17,6 @@ from discord.ext import commands
 
 from ..utils.persistent_settings import DiscordIDSettings
 
-guild_settings = DiscordIDSettings("roles")
-
 ROLES_MESSAGE_DELETE_DELAY = 60
 
 
@@ -55,7 +53,7 @@ class Roles(commands.Cog, name="Server Roles"):
     @delete_command_message()
     async def role(self, ctx, *, role: typing.Union[discord.Role, str]):
         """Self-assign a given role, toggling between adding and removing."""
-        public_roles = guild_settings.get(ctx.bot, ctx.guild.id, "public_roles", {})
+        public_roles = ctx.bot.roles.get(ctx.guild.id, "public_roles", {})
         if isinstance(role, discord.Role):
             roles_by_id = {r["id"]: r for k, r in public_roles.items()}
             # switch public_roles over to a dict with the role id as the key
@@ -103,18 +101,18 @@ class Roles(commands.Cog, name="Server Roles"):
     ):
         """Make an existing role self-assignable through the role command."""
         role_dict = dict(id=role.id, name=role.name, description=description)
-        public_roles = guild_settings.get(ctx.bot, ctx.guild.id, "public_roles")
+        public_roles = ctx.bot.roles.get(ctx.guild.id, "public_roles")
         if public_roles is None:
             public_roles = {}
         public_roles[key] = role_dict
-        guild_settings.set(ctx.bot, ctx.guild.id, "public_roles", public_roles)
+        ctx.bot.roles.set(ctx.guild.id, "public_roles", public_roles)
 
     @commands.command(brief="Remove a public role", usage="<role>")
     @commands.has_permissions(manage_roles=True)
     @delete_command_message()
     async def removepublicrole(self, ctx, *, role: discord.Role):
         """Make a role no longer self-assignable through the role command."""
-        public_roles = guild_settings.get(ctx.bot, ctx.guild.id, "public_roles")
+        public_roles = ctx.bot.roles.get(ctx.guild.id, "public_roles")
         if public_roles is None:
             public_roles = {}
         for _key, role_dict in public_roles.items():
@@ -125,13 +123,13 @@ class Roles(commands.Cog, name="Server Roles"):
             await ctx.send(missingstr, delete_after=ROLES_MESSAGE_DELETE_DELAY)
             return
         public_roles.pop(_key)
-        guild_settings.set(ctx.bot, ctx.guild.id, "public_roles", public_roles)
+        ctx.bot.roles.set(ctx.guild.id, "public_roles", public_roles)
 
 
 def setup(bot):
     """Set up the roles extension."""
     # set up persistent roles guild settings
-    guild_settings.setup(bot)
+    bot.roles = DiscordIDSettings(bot, "roles")
 
     bot.add_cog(Roles(bot))
 
@@ -139,4 +137,4 @@ def setup(bot):
 def teardown(bot):
     """Tear down the roles extension."""
     # tear down persistent roles guild settings
-    guild_settings.teardown(bot)
+    bot.roles.teardown(bot)
