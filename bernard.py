@@ -59,7 +59,7 @@ initial_extensions = [
 bot = commands.Bot(
     command_prefix=get_prefix,
     description="Bernard - Discord bot and Head of Behavior",
-    help_command=CustomHelpCommand(dm_help=True),
+    help_command=CustomHelpCommand(sort_commands=False, dm_help=True),
     owner_id=owner_id,
 )
 

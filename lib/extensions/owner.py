@@ -26,7 +26,7 @@ def resolve_extension_name(ext):
     return f"{dotpath}.{ext}"
 
 
-class OwnerCog(commands.Cog):
+class OwnerCog(commands.Cog, name="Owner"):
     """Owner Cog."""
 
     def __init__(self, bot):
@@ -88,7 +88,7 @@ class OwnerCog(commands.Cog):
         else:
             await ctx.send("**`SUCCESS`**")
 
-    @commands.command()
+    @commands.command(brief="Print the Unicode string for a given emoji.")
     @commands.is_owner()
     @commands.dm_only()
     async def emojiname(self, ctx, *, emojis: str):

@@ -36,7 +36,7 @@ def delete_command_message(delay=10, only_on_success=False):
     return decorator
 
 
-class Roles(commands.Cog, name="Server Roles"):
+class Roles(commands.Cog, name="Roles"):
     """Manage server roles."""
 
     def __init__(self, bot):
