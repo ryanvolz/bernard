@@ -26,18 +26,29 @@ if owner_id is not None:
 
 
 class CustomHelpCommand(commands.DefaultHelpCommand):
+    delete_delay = 30
+
     async def prepare_help_command(self, ctx, command):
         """Customized to delete command message."""
-        delete_delay = 30
         if ctx.guild is not None:
             # command is in a text channel, delete response after some time
-            await ctx.message.delete(delay=delete_delay)
-            if self.get_destination() == ctx.author:
-                # if response is going to author, let them know
-                await ctx.send(
-                    "I've sent you a Direct Message.", delete_after=delete_delay
-                )
+            await ctx.message.delete(delay=self.delete_delay)
         await super().prepare_help_command(ctx, command)
+
+    async def send_error_message(self, error):
+        """Always send error message to the command context"""
+        await self.context.send(error, delete_after=self.delete_delay)
+
+    async def send_pages(self):
+        """Notify user in channel if the response is coming as a DM."""
+        destination = self.get_destination()
+        dest_guild = getattr(destination, "guild", None)
+        if self.context.guild is not None and dest_guild is None:
+            await self.context.send(
+                "I've sent you a Direct Message.", delete_after=self.delete_delay
+            )
+        for page in self.paginator.pages:
+            await destination.send(page)
 
     # override send_bot_help with fix so that unsorted commands stay in right order
     async def send_bot_help(self, mapping):
@@ -54,18 +65,18 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
             cog = command.cog
             return cog.qualified_name + ":" if cog is not None else no_category
 
-        filtered = await self.filter_commands(
-            bot.commands, sort=self.sort_commands, key=get_category
-        )
+        filtered = []
+        for _cogname, cog in sorted(bot.cogs.items()):
+            cog_filtered = await self.filter_commands(
+                cog.get_commands(), sort=self.sort_commands
+            )
+            filtered.extend(cog_filtered)
         max_size = self.get_max_size(filtered)
         to_iterate = itertools.groupby(filtered, key=get_category)
 
         # Now we can add the commands to the page.
         for category, cmds in to_iterate:
-            cmds = (
-                sorted(cmds, key=lambda c: c.name) if self.sort_commands else list(cmds)
-            )
-            self.add_indented_commands(cmds, heading=category, max_size=max_size)
+            self.add_indented_commands(list(cmds), heading=category, max_size=max_size)
 
         note = self.get_ending_note()
         if note:
@@ -99,9 +110,7 @@ initial_extensions = [
 bot = commands.Bot(
     command_prefix=get_prefix,
     description="Bernard - Discord bot and Head of Behavior",
-    help_command=CustomHelpCommand(
-        sort_commands=False, dm_help=None, dm_help_threshold=4
-    ),
+    help_command=CustomHelpCommand(sort_commands=False, dm_help=True),
     owner_id=owner_id,
 )
 
