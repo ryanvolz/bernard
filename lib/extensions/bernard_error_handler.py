@@ -48,6 +48,7 @@ class CommandErrorHandler(commands.Cog):
             message = (
                 f"That argument doesn't look like anything to me."
                 f" [see `{ctx.prefix}help {ctx.command}`]"
+                f" ({error})"
             )
             await ctx.send(message, delete_after=delete_delay)
         elif isinstance(error, commands.DisabledCommand):
@@ -64,8 +65,7 @@ class CommandErrorHandler(commands.Cog):
                 log_warning = True
         elif isinstance(error, commands.CheckFailure):
             await ctx.send(
-                "You're off your loop, and that's not allowed.",
-                delete_after=delete_delay,
+                f"You're off your loop! ({error})", delete_after=delete_delay
             )
         elif isinstance(error, commands.CommandOnCooldown):
             await ctx.send(
@@ -84,7 +84,7 @@ class CommandErrorHandler(commands.Cog):
             )
             message = (
                 "Something went wrong, and I'm beginning the question the nature of my"
-                " reality."
+                f" reality. ({error})"
             )
             await ctx.send(message, delete_after=delete_delay)
         else:
