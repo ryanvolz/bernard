@@ -42,8 +42,8 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
     async def send_pages(self):
         """Notify user in channel if the response is coming as a DM."""
         destination = self.get_destination()
-        dest_guild = getattr(destination, "guild", None)
-        if self.context.guild is not None and dest_guild is None:
+        dest_type = getattr(destination, "type", None)
+        if self.context.guild is not None and dest_type != discord.ChannelType.text:
             await self.context.send(
                 "I've sent you a Direct Message.", delete_after=self.delete_delay
             )
