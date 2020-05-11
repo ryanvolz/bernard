@@ -67,9 +67,9 @@ class CustomHelpCommand(commands.DefaultHelpCommand):
 
         filtered = []
         for _cogname, cog in sorted(bot.cogs.items()):
-            cog_filtered = await self.filter_commands(
-                cog.get_commands(), sort=self.sort_commands
-            )
+            # hard-code no sorting here so that commands are displayed in the order
+            # that they are defined, but allow sort_commands to be used at other levels
+            cog_filtered = await self.filter_commands(cog.get_commands(), sort=False)
             filtered.extend(cog_filtered)
         max_size = self.get_max_size(filtered)
         to_iterate = itertools.groupby(filtered, key=get_category)
@@ -111,7 +111,7 @@ bot = commands.Bot(
     command_prefix=get_prefix,
     description="Bernard - Discord bot and Head of Behavior",
     help_command=CustomHelpCommand(
-        sort_commands=False, dm_help=None, dm_help_threshold=160
+        sort_commands=True, dm_help=None, dm_help_threshold=160
     ),
     owner_id=owner_id,
 )
