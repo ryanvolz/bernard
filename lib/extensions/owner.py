@@ -43,10 +43,12 @@ class OwnerCog(commands.Cog, name="Owner"):
         try:
             self.bot.load_extension(fullname)
         except Exception as e:
+            if hasattr(e, "original"):
+                exc = e.original
+            else:
+                exc = e
             tbstr = "".join(
-                traceback.format_exception(
-                    type(e.original), e.original, e.original.__traceback__
-                )
+                traceback.format_exception(type(exc), exc, exc.__traceback__)
             )
             await ctx.send(f"**`ERROR:`** {type(e).__name__} - {e}\n{tbstr}")
         else:
@@ -61,10 +63,12 @@ class OwnerCog(commands.Cog, name="Owner"):
         try:
             self.bot.unload_extension(fullname)
         except Exception as e:
+            if hasattr(e, "original"):
+                exc = e.original
+            else:
+                exc = e
             tbstr = "".join(
-                traceback.format_exception(
-                    type(e.original), e.original, e.original.__traceback__
-                )
+                traceback.format_exception(type(exc), exc, exc.__traceback__)
             )
             await ctx.send(f"**`ERROR:`** {type(e).__name__} - {e}\n{tbstr}")
         else:
@@ -79,10 +83,12 @@ class OwnerCog(commands.Cog, name="Owner"):
         try:
             self.bot.reload_extension(fullname)
         except Exception as e:
+            if hasattr(e, "original"):
+                exc = e.original
+            else:
+                exc = e
             tbstr = "".join(
-                traceback.format_exception(
-                    type(e.original), e.original, e.original.__traceback__
-                )
+                traceback.format_exception(type(exc), exc, exc.__traceback__)
             )
             await ctx.send(f"**`ERROR:`** {type(e).__name__} - {e}\n{tbstr}")
         else:
