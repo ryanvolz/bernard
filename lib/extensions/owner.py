@@ -19,13 +19,16 @@ from discord.ext import commands
 def resolve_extension_name(ext):
     """Search in extension folders and return fully-qualified extension name."""
     basepath = pathlib.Path(".").resolve()
-    matching_ext = list(basepath.glob(f"**/*extension*/{ext}.py")) + list(
-        basepath.glob(f"**/*extension*/{ext}/__init__.py")
-    )
+    matching_ext = list(basepath.glob(f"**/*extension*/{ext}.py"))
     if len(matching_ext) != 1:
-        raise commands.UserInputError("Could not match the extension name")
-    dotpath = ".".join(matching_ext[0].relative_to(basepath).parent.parts)
-    return f"{dotpath}.{ext}"
+        matching_ext = list(basepath.glob(f"**/*extension*/{ext}/__init__.py"))
+        if len(matching_ext) != 1:
+            raise commands.UserInputError("Could not match the extension name")
+        else:
+            return ".".join(matching_ext[0].relative_to(basepath).parent.parts)
+    else:
+        dotpath = ".".join(matching_ext[0].relative_to(basepath).parent.parts)
+        return f"{dotpath}.{ext}"
 
 
 def paginate_exception(e):
