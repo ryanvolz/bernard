@@ -26,6 +26,20 @@ def resolve_extension_name(ext):
     return f"{dotpath}.{ext}"
 
 
+def paginate_exception(e):
+    if hasattr(e, "original"):
+        exc = e.original
+    else:
+        exc = e
+    tblines = traceback.format_exception(type(exc), exc, exc.__traceback__)
+    paginator = commands.Paginator(
+        prefix=f"**`ERROR:`** {type(e).__name__} - {e}\n", suffix=""
+    )
+    for line in tblines:
+        paginator.add_line(line)
+    return paginator.pages
+
+
 class OwnerCog(commands.Cog, name="Owner"):
     """Owner Cog."""
 
@@ -43,14 +57,8 @@ class OwnerCog(commands.Cog, name="Owner"):
         try:
             self.bot.load_extension(fullname)
         except Exception as e:
-            if hasattr(e, "original"):
-                exc = e.original
-            else:
-                exc = e
-            tbstr = "".join(
-                traceback.format_exception(type(exc), exc, exc.__traceback__)
-            )
-            await ctx.send(f"**`ERROR:`** {type(e).__name__} - {e}\n{tbstr}")
+            for page in paginate_exception(e):
+                await ctx.send(page)
         else:
             await ctx.send("**`SUCCESS`**")
 
@@ -63,14 +71,8 @@ class OwnerCog(commands.Cog, name="Owner"):
         try:
             self.bot.unload_extension(fullname)
         except Exception as e:
-            if hasattr(e, "original"):
-                exc = e.original
-            else:
-                exc = e
-            tbstr = "".join(
-                traceback.format_exception(type(exc), exc, exc.__traceback__)
-            )
-            await ctx.send(f"**`ERROR:`** {type(e).__name__} - {e}\n{tbstr}")
+            for page in paginate_exception(e):
+                await ctx.send(page)
         else:
             await ctx.send("**`SUCCESS`**")
 
@@ -83,14 +85,8 @@ class OwnerCog(commands.Cog, name="Owner"):
         try:
             self.bot.reload_extension(fullname)
         except Exception as e:
-            if hasattr(e, "original"):
-                exc = e.original
-            else:
-                exc = e
-            tbstr = "".join(
-                traceback.format_exception(type(exc), exc, exc.__traceback__)
-            )
-            await ctx.send(f"**`ERROR:`** {type(e).__name__} - {e}\n{tbstr}")
+            for page in paginate_exception(e):
+                await ctx.send(page)
         else:
             await ctx.send("**`SUCCESS`**")
 
