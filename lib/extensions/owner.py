@@ -33,7 +33,7 @@ def paginate_exception(e):
         exc = e
     tblines = traceback.format_exception(type(exc), exc, exc.__traceback__)
     paginator = commands.Paginator(
-        prefix=f"**`ERROR:`** {type(e).__name__} - {e}\n", suffix=""
+        prefix=f"**`ERROR:`** {type(e).__name__} - {e}\n```", suffix="```"
     )
     for line in tblines:
         paginator.add_line(line)
